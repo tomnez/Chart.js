@@ -10,6 +10,60 @@ var helpers = {
 	noop: function() {},
 
 	/**
+	 * Takes a jsDate with any time zone data and returns
+	 * a new moment object of the _same_ date but in whatever
+	 * default timezone moment is set to.
+	 */
+	newMomentObjectInMomentDefaultZone(jsDate) {
+	  return moment()
+	    .year(jsDate.getFullYear())
+	    .month(jsDate.getMonth())
+	    .date(jsDate.getDate())
+	    .hour(jsDate.getHours());
+	},
+
+	/**
+	 * Takes a date provided by the API in the following format:
+	 *
+	 *  2017-12-01T00:00:00+00:00
+	 *  2017-12-01T00:00:00Z
+	 *
+	 * and creates a date object out of it using only the year,
+	 * month, date, and hours values. Disregards hours and timezone.
+	 */
+	newDateObjectInDefaultZone(utcFormattedDateString) {
+	  if (!this.isUtcFormattedDateString(utcFormattedDateString)) {
+	    console.warn('wrong date format passed to `newDateObjectInDefaultZone`');
+	    return;
+	  }
+
+	  let [ year, month, date ] = utcFormattedDateString.split('T').firstObject.split('-');
+	  let hour = utcFormattedDateString.split('T').pop().split(':').firstObject;
+
+	  // JS Date months are 0-based, whereas
+	  // the UTC format displays as 1-based.
+	  month = month - 1;
+
+	  return new Date(year, month, date, hour);
+	},
+
+	/**
+	 * Returns `true` if a passed-in date string matches the
+	 * following formats:
+	 *
+	 *  2017-12-01T00:00:00+00:00
+	 *  2017-12-01T00:00:00Z
+	 */
+	isUtcFormattedDateString(dateString) {
+		if (typeof dateString !== 'string') {
+			return false;
+		}
+
+	  let utcTimeRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}((\+|\-)\d{2}:\d{2}|Z)/g;
+	  return dateString.match(utcTimeRegex);
+	},
+
+	/**
 	 * Returns a unique id, sequentially generated from a global variable.
 	 * @returns {Number}
 	 * @function
