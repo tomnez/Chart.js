@@ -190,11 +190,13 @@ function momentify(value, options) {
 	}
 
 	if (typeof value === 'string' && typeof format === 'string') {
-		return moment(value, format);
+		value = helpers.isUtcFormattedDateString(value) ? helpers.newDateObjectInDefaultZone(value) : value;
+		return helpers.newMomentObjectInMomentDefaultZone(new Date(value)).format(format);
 	}
 
 	if (!(value instanceof moment)) {
-		value = moment(value);
+		value = helpers.isUtcFormattedDateString(value) ? helpers.newDateObjectInDefaultZone(value) : value;
+		value = helpers.newMomentObjectInMomentDefaultZone(new Date(value));
 	}
 
 	if (value.isValid()) {
